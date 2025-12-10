@@ -1,10 +1,9 @@
 import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing';
+import { EffectComposer, Bloom, Vignette, Glitch, ChromaticAberration } from '@react-three/postprocessing';
 import * as THREE from 'three';
 import { easing } from 'maath';
 
-// --- Configuration for Movies ---
 // --- Configuration for Genres ---
 export const THEMES = {
     MYSTERY: {
@@ -235,6 +234,16 @@ export const MovieOverlay = ({ activeTheme, setActiveTheme }) => {
 };
 
 const MassScene = ({ activeTheme = 'MYSTERY' }) => {
+    const [glitchActive, setGlitchActive] = useState(false);
+
+    useEffect(() => {
+        if (activeTheme === 'HORROR') {
+            setGlitchActive(true);
+            const timer = setTimeout(() => setGlitchActive(false), 600); // 0.6s glitch
+            return () => clearTimeout(timer);
+        }
+    }, [activeTheme]);
+
     return (
         <div className="canvas-container" style={{ background: 'black', width: '100%', height: '100%' }}>
             <Canvas camera={{ position: [0, 0, 15], fov: 45 }}>
@@ -245,6 +254,20 @@ const MassScene = ({ activeTheme = 'MYSTERY' }) => {
                 <EffectComposer disableNormalPass>
                     <Bloom luminanceThreshold={0} mipmapBlur intensity={1.5} radius={0.6} />
                     <Vignette eskil={false} offset={0.1} darkness={1.1} />
+
+                    {/* Horror Effects */}
+                    <Glitch
+                        active={glitchActive}
+                        delay={[0, 0]}
+                        duration={[0.6, 1.0]}
+                        strength={[0.3, 1.0]}
+                        ratio={0.85}
+                    />
+                    <ChromaticAberration
+                        offset={[glitchActive ? 0.02 : 0, glitchActive ? 0.02 : 0]}
+                        radialModulation={false}
+                        modulationOffset={0}
+                    />
                 </EffectComposer>
             </Canvas>
         </div>
